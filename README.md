@@ -2,6 +2,10 @@
 
 A deterministic, bounded diagnostic recorder for PAM Native development: application events, serializable state snapshots, performance marks, errors, and complete network transactions. Export one JSON artifact for bug reports or CI regressions without coupling production apps to a visual UI.
 
+```bash
+composer require --dev pushinbr/pam-native-devtools
+```
+
 ```php
 $tools->snapshot('session', $session);
 $tools->mark('feed.start');
