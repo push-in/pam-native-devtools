@@ -19,8 +19,8 @@ pam doctor --fix
 A deterministic, bounded diagnostic recorder for PAM Native development: application events, serializable state snapshots, performance marks, errors, and complete network transactions. Export one JSON artifact for bug reports or CI regressions without coupling production apps to a visual UI.
 
 ```bash
-pam add devtools
-pam doctor
+pam composer require pushinbr/pam-native-devtools
+pam doctor --fix
 ```
 
 ```php
@@ -46,9 +46,9 @@ Sensitive keys are redacted recursively, object depth and collection size are bo
 
 ## What installation does
 
-`pam add devtools` resolves the official compatible package, performs a non-mutating Composer preflight, updates the normal `composer.json` and `composer.lock`, refreshes generated native integration when required, and leaves the project ready for `pam doctor` validation.
+`pam composer require pushinbr/pam-native-devtools` installs the package through the project's normal `composer.json` and `composer.lock`. Run `pam doctor --fix` afterward to validate the environment and regenerate native integration when required.
 
-Use `pam packages` to inspect availability and `pam remove devtools` to uninstall the capability safely. Direct Composer commands are an advanced interoperability path; PAM is the supported application workflow.
+Use `pam packages` to inspect direct installed Composer dependencies and `pam composer remove pushinbr/pam-native-devtools` to uninstall the capability.
 
 ## API guide
 
