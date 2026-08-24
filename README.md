@@ -25,11 +25,20 @@ pam doctor
 
 ```php
 $tools->snapshot('session', $session);
+$tools->mutation('session', $previousSession, $session);
+$tools->frame('feed', ['refreshRateHz' => 120, 'frameMs' => 7.4, 'missed' => false]);
 $tools->mark('feed.start');
 $request = $tools->network('GET', $url, $headers);
 try { $request->complete(200, $responseHeaders, $body); }
 catch (Throwable $e) { $request->fail($e->getMessage()); throw $e; }
 $tools->measure('feed.load', 'feed.start');
+
+$artifact = $tools->exportJson();
+$recording = TimelineRecording::fromJson($artifact);
+$replay = new ReplaySession($recording);
+$replay->replay(static function (array $record): void {
+    // Feed the exact, ordered diagnostic event into a test or inspector.
+});
 ```
 
 Sensitive keys are redacted recursively, object depth and collection size are bounded, strings are truncated, and the oldest records are discarded under pressure. The package complements PAM's native debug overlay and navigation timeline; it does not ship UI into production applications.
@@ -45,9 +54,11 @@ Use `pam packages` to inspect availability and `pam remove devtools` to uninstal
 
 | API | Responsibility |
 | --- | --- |
-| `DevTools` | Record events, snapshots, marks, measures, errors, and network work. |
+| `DevTools` | Record events, mutations, snapshots, frames, marks, measures, errors, and network work. |
 | `NetworkTransaction` | Complete or fail a captured request lifecycle. |
 | `Redactor` | Bound and recursively redact diagnostic values. |
+| `TimelineRecording` | Validate and serialize the bounded, versioned replay artifact. |
+| `ReplaySession` | Step, seek, time travel to state, or replay the timeline deterministically. |
 | `RecordKind` / `NetworkState` | Typed diagnostic record states. |
 
 All coded states, kinds, and variants are sequential integer-backed enums. Use enum cases in application code; do not depend on raw wire numbers.
@@ -69,7 +80,7 @@ All coded states, kinds, and variants are sequential integer-backed enums. Use e
 
 ## Compatibility and support
 
-This package targets PAM Native `0.6.x`, Android API 26+, and iOS 15+ unless a platform-specific section above states a stricter requirement. Platform SDKs, credentials, entitlements, physical hardware, and store configuration remain application responsibilities.
+This package targets PAM Native `0.8.x`, PHP 8.5, Android API 26+, and iOS 15+ unless a platform-specific section above states a stricter requirement. Platform SDKs, credentials, entitlements, physical hardware, and store configuration remain application responsibilities.
 
 - [PAM documentation](https://push-in.github.io/pam-docs/introduction/)
 - [PAM Native overview](https://push-in.github.io/pam-docs/native/overview/)
