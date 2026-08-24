@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 - 2026-08-24
+
+- Document the canonical Composer installation and removal workflow.
+
 ## 0.3.0 - 2026-08-24
 
 - Add versioned, byte-stable temporal recordings and deterministic replay.
