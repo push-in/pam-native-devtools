@@ -1,63 +1,47 @@
-<!-- pam:product-page:start -->
 <div align="center">
 
-# PAM Native DevTools
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.svg">
+  <img src=".github/assets/banner-light.svg" width="880" alt="pam-native-devtools: Record state, network and frames, then replay them deterministically.">
+</picture>
 
-**See every state transition—and replay it deterministically.**
+**See every state transition, and replay it deterministically.**<br>
+A bounded, redacted recorder for events, snapshots, mutations, frames, performance marks, errors and network work. Export one JSON artifact for bug reports or CI.
 
-Inspect timelines, snapshots, network activity, and performance marks with bounded, redacted evidence suitable for development and CI.
+[![Packagist](https://img.shields.io/packagist/v/pushinbr/pam-native-devtools?label=packagist&color=f53003)](https://packagist.org/packages/pushinbr/pam-native-devtools)
+[![Latest release](https://img.shields.io/github/v/release/push-in/pam-native-devtools?label=release&color=e3a008)](https://github.com/push-in/pam-native-devtools/releases/latest)
+![PHP 8.5](https://img.shields.io/badge/php-8.5-777bb4)
+[![CI](https://img.shields.io/github/actions/workflow/status/push-in/pam-native-devtools/ci.yml?branch=main&label=ci)](https://github.com/push-in/pam-native-devtools/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/push-in/pam-native-devtools?color=1f6feb)](LICENSE)
 
-[![Latest version](https://img.shields.io/packagist/v/pushinbr/pam-native-devtools?style=flat-square&label=stable)](https://packagist.org/packages/pushinbr/pam-native-devtools)
-[![CI](https://img.shields.io/github/actions/workflow/status/push-in/pam-native-devtools/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/push-in/pam-native-devtools/actions)
-![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?style=flat-square&logo=php&logoColor=white)
-![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=flat-square&logo=android&logoColor=white)
-![iOS](https://img.shields.io/badge/iOS-15%2B-000000?style=flat-square&logo=apple&logoColor=white)
-
-**[Documentation](https://push-in.github.io/pam-docs/native/overview/) · [Quick start](#quick-start) · [What you can build](#what-you-can-build) · [PAM ecosystem](https://push-in.github.io/pam-docs/ecosystem/) · [Issues](https://github.com/push-in/pam-native-devtools/issues)**
+[Install](#install) · [Quick example](#quick-example) · [API](#api-guide) · [Checklist](#production-checklist) · [Docs](#docs) · [Issues](https://github.com/push-in/pam-native-devtools/issues)
 
 </div>
 
----
+<a id="install"></a>
+## <picture><img src=".github/assets/icons/terminal.svg" width="22" height="22" alt=""></picture> Install
 
-## Why PAM Native DevTools
+Inside a PAM Native project:
 
-Inspect timelines, snapshots, network activity, and performance marks with bounded, redacted evidence suitable for development and CI. The public API is strictly typed for PHP 8.5; expensive or frame-sensitive work stays in Rust or the platform SDK instead of crossing the application boundary every frame.
-
-| | |
-| --- | --- |
-| **Best for** | A focused capability you can add to any PAM Native application |
-| **Native path** | Deterministic temporal recorder · Native overlays |
-| **Application model** | Composer package + generated native integration |
-| **Design rule** | Independent module; no feed, vertical, or application template bundled |
-
-## What you can build
-
-- Time-travel debugging for signals and actions
-- Network and native-event inspection
-- Frame-jank investigation and reproducible bug reports
-
-## Quick start
-
-Already have a PAM Native project? Add only this capability:
-
-```bash
+```sh
 pam composer require pushinbr/pam-native-devtools
 pam doctor --fix
 ```
 
-New to PAM? Follow the **[five-minute PAM Native setup](https://push-in.github.io/pam-docs/native/overview/)** once, then return here. Your application stays a normal Composer project with a committed lockfile.
-<!-- pam:product-page:end -->
+This package is plain PHP (no plugin manifest, no native permissions); `pam doctor --fix` validates the environment and regenerates native integration when required. New to PAM? Create a project with `pam init my-app --template native` and run it with `pam mobile dev` (see the [PAM Native overview](https://push-in.github.io/pam-docs/native/overview/)), then come back here. Composer owns the manifest and the lockfile; `pam composer` runs it on PAM's verified PHP runtime. Remove it with `pam composer remove pushinbr/pam-native-devtools`.
 
-## See it in action
-
-A deterministic, bounded diagnostic recorder for PAM Native development: application events, serializable state snapshots, performance marks, errors, and complete network transactions. Export one JSON artifact for bug reports or CI regressions without coupling production apps to a visual UI.
-
-```bash
-pam composer require pushinbr/pam-native-devtools
-pam doctor --fix
-```
+<a id="quick-example"></a>
+## <picture><img src=".github/assets/icons/code.svg" width="22" height="22" alt=""></picture> Quick example
 
 ```php
+<?php
+
+use Pam\Native\DevTools\DevTools;
+use Pam\Native\DevTools\ReplaySession;
+use Pam\Native\DevTools\TimelineRecording;
+
+$tools = new DevTools();
+
 $tools->snapshot('session', $session);
 $tools->mutation('session', $previousSession, $session);
 $tools->frame('feed', ['refreshRateHz' => 120, 'frameMs' => 7.4, 'missed' => false]);
@@ -77,18 +61,22 @@ $replay->replay(static function (array $record): void {
 
 Sensitive keys are redacted recursively, object depth and collection size are bounded, strings are truncated, and the oldest records are discarded under pressure. The package complements PAM's native debug overlay and navigation timeline; it does not ship UI into production applications.
 
-## What installation does
+<a id="platform-support"></a>
+## <picture><img src=".github/assets/icons/grid.svg" width="22" height="22" alt=""></picture> Platform support
 
-`pam composer require pushinbr/pam-native-devtools` installs the package through the project's normal `composer.json` and `composer.lock`. Run `pam doctor --fix` afterward to validate the environment and regenerate native integration when required.
+| Platform | Support | Notes |
+| --- | --- | --- |
+| PAM Native | `^0.8 \|\| ^0.9 \|\| ^0.10 \|\| ^1.0` | From `composer.json` |
+| PHP | 8.5+ | Requires `ext-json` |
+| Android / iOS | Whatever the PAM Native host supports | Pure PHP: no plugin manifest, permissions or native code of its own |
 
-Use `pam packages` to inspect direct installed Composer dependencies and `pam composer remove pushinbr/pam-native-devtools` to uninstall the capability.
-
-## API guide
+<a id="api-guide"></a>
+## <picture><img src=".github/assets/icons/code.svg" width="22" height="22" alt=""></picture> API guide
 
 | API | Responsibility |
 | --- | --- |
 | `DevTools` | Record events, mutations, snapshots, frames, marks, measures, errors, and network work. |
-| `NetworkTransaction` | Complete or fail a captured request lifecycle. |
+| `NetworkTransaction` | Complete, fail or cancel a captured request lifecycle. |
 | `Redactor` | Bound and recursively redact diagnostic values. |
 | `TimelineRecording` | Validate and serialize the bounded, versioned replay artifact. |
 | `ReplaySession` | Step, seek, time travel to state, or replay the timeline deterministically. |
@@ -96,7 +84,8 @@ Use `pam packages` to inspect direct installed Composer dependencies and `pam co
 
 All coded states, kinds, and variants are sequential integer-backed enums. Use enum cases in application code; do not depend on raw wire numbers.
 
-## Production checklist
+<a id="production-checklist"></a>
+## <picture><img src=".github/assets/icons/shield.svg" width="22" height="22" alt=""></picture> Production checklist
 
 - Keep DevTools in development and diagnostic builds.
 - Add product-specific sensitive keys to redaction rules.
@@ -104,20 +93,34 @@ All coded states, kinds, and variants are sequential integer-backed enums. Use e
 - Run `pam doctor`, `pam test`, and a signed release build on every supported platform.
 - Exercise denial, cancellation, backgrounding, process restart, and offline behavior before release.
 
-## Troubleshooting
+<a id="troubleshooting"></a>
+## <picture><img src=".github/assets/icons/bug.svg" width="22" height="22" alt=""></picture> Troubleshooting
 
 - **Records disappear:** the buffer intentionally drops oldest entries under pressure.
 - **Values are truncated:** increase detail only when the privacy and size trade-off is acceptable.
-- **A request remains open:** always call `complete()` or `fail()`.
+- **A request remains open:** always call `complete()`, `fail()` or `cancel()`.
 - **Native integration is stale:** run `pam doctor --fix`, rebuild the native host, and inspect the first reported diagnostic.
 
-## Compatibility and support
+Report security vulnerabilities through the repository security policy or GitHub private vulnerability reporting, not a public issue.
 
-This package targets PAM Native `0.8.x`, PHP 8.5, Android API 26+, and iOS 15+ unless a platform-specific section above states a stricter requirement. Platform SDKs, credentials, entitlements, physical hardware, and store configuration remain application responsibilities.
+<a id="docs"></a>
+## <picture><img src=".github/assets/icons/book.svg" width="22" height="22" alt=""></picture> Docs
 
-- [PAM documentation](https://push-in.github.io/pam-docs/introduction/)
+- [Package guide on pam-docs](https://push-in.github.io/pam-docs/packages/native-devtools/)
 - [PAM Native overview](https://push-in.github.io/pam-docs/native/overview/)
 - [Plugin and native capability model](https://push-in.github.io/pam-docs/native/plugins/)
+- [Changelog](CHANGELOG.md)
 - [Report an issue](https://github.com/push-in/pam-native-devtools/issues)
 
-Security vulnerabilities should be reported through the repository security policy or GitHub private vulnerability reporting, not a public issue.
+<a id="pam-ecosystem"></a>
+## <picture><img src=".github/assets/icons/plug.svg" width="22" height="22" alt=""></picture> Part of the PAM ecosystem
+
+PAM runs PHP natively on servers, desktops and phones. This repository is one piece of it.
+
+| [**PAM**](https://github.com/push-in/pam) | [**PAM Desktop**](https://github.com/push-in/pam-desktop) | [**PAM Native**](https://github.com/push-in/pam-native) | [**Ecosystem**](https://github.com/push-in/pam#ecosystem) |
+| --- | --- | --- | --- |
+| the runtime and CLI | native desktop apps in PHP | native Android and iOS apps in PHP | every official package and plugin |
+
+<sub>Docs: [push-in.github.io/pam-docs](https://push-in.github.io/pam-docs/introduction/) · [Issues](https://github.com/push-in/pam-native-devtools/issues)</sub>
+
+<p align="center"><sub><a href="LICENSE">Apache License 2.0</a> · Made in Brazil by Pushin</sub></p>
